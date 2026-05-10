@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.microservice.name }}-ingress
+  namespace: {{ .Values.microservice.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.microservice.name }}-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: api.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/api"
+        backend:
+          service:
+            name: {{ .Values.microservice.name }}-service
+            port:
+              number: 5001

@@ -1,0 +1,49 @@
+microservice:
+  name: "backend"
+  namespace: "backend"
+  replicas: 1
+  minReplicas: 1
+  maxReplicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+container:
+  name: "taskmanager-backend"
+  image: "congthanh19/taskmanager-backend"
+  tag: "latest"
+  imagePullPolicy: Always
+workload:
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 5001
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 5001
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+secret:
+  name: backend-secret
+service:
+  type: ClusterIP
+  port: 5001
+  targetPort: 5001
+
+

@@ -1,0 +1,9 @@
+database:
+  name: postgres
+  namespace: backend
+  replicas: 1
+  port: 5432
+  image: postgres:13
+
+database-secret:
+  name: database-secret

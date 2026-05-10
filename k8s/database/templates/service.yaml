@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.database.name }}-service
+  namespace: {{ .Values.database.namespace }}
+spec:
+  clusterIP: None
+  selector:
+    app: {{ .Values.database.name }}
+  ports:
+  - port: 5432
+    targetPort: 5432

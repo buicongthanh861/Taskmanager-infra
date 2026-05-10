@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.microservice.name }}-deployment
+  namespace: {{ .Values.microservice.namespace }}
+spec:
+  replicas: {{ .Values.microservice.replicas }}
+
+  revisionHistoryLimit: {{ .Values.microservice.revisionHistoryLimit }}
+
+  strategy:
+    type: {{ .Values.microservice.strategy.type }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.microservice.strategy.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.microservice.strategy.rollingUpdate.maxSurge }}
+  selector:
+    matchLabels:
+      app: {{ .Values.microservice.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.microservice.name }}
+    spec:
+      containers:
+      - name: {{ .Values.container.name }}
+        image: {{ .Values.container.image }}:{{ .Values.container.tag }}
+        imagePullPolicy: {{ .Values.container.imagePullPolicy }}
+        env:
+        - name: PORT
+          value: "5001"
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: JWT_SECRET
+        - name: JWT_EXPIRES_IN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: JWT_EXPIRES_IN
+        - name: FRONTEND_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: FRONTEND_URL
+        resources:
+          limits:
+            memory: {{ .Values.workload.resources.limits.memory }}
+            cpu: {{ .Values.workload.resources.limits.cpu }}
+          requests:
+            memory: {{ .Values.workload.resources.requests.memory }}
+            cpu: {{ .Values.workload.resources.requests.cpu }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.workload.livenessProbe.httpGet.path }}
+            port: {{ .Values.workload.livenessProbe.httpGet.port }}
+          initialDelaySeconds: {{ .Values.workload.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.workload.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.workload.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.workload.livenessProbe.failureThreshold }}
+
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.workload.readinessProbe.httpGet.path }}
+            port: {{ .Values.workload.readinessProbe.httpGet.port }}
+          initialDelaySeconds: {{ .Values.workload.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.workload.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.workload.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.workload.readinessProbe.failureThreshold }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
