@@ -23,12 +23,6 @@ spec:
       - name: {{ .Values.container.name }}
         image: {{ .Values.container.image }}:{{ .Values.container.tag }}
         imagePullPolicy: {{ .Values.container.imagePullPolicy }}
-        env:
-        - name: VITE_API_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.secret.name }}
-              key: VITE_API_URL
         resources:
           limits:
             memory: {{ .Values.workload.resources.limits.memory }}

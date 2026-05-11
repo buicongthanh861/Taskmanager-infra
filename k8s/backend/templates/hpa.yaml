@@ -8,8 +8,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Values.microservice.name }}-deployment
-  minReplicas: {{ .Values.microservice.hpa.minReplicas }}
-  maxReplicas: {{ .Values.microservice.hpa.maxReplicas }}
+  minReplicas: {{ .Values.microservice.minReplicas }}
+  maxReplicas: {{ .Values.microservice.maxReplicas }}
   metrics:
   - type: Resource
     resource:

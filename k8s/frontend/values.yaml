@@ -26,7 +26,7 @@ workload:
   livenessProbe:
     httpGet:
       path: /
-      port: 3000
+      port: 80
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
@@ -34,14 +34,13 @@ workload:
   readinessProbe:
     httpGet:
       path: /
-      port: 3000
+      port: 80
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
-secret:
-  name: frontend-secret
 service:
   type: ClusterIP
-  port: 3000
-  targetPort: 3000
+  port: 80
+  targetPort: 80
+
