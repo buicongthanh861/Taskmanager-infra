@@ -13,7 +13,7 @@ microservice:
 container:
   name: "taskmanager-backend"
   image: "congthanh19/taskmanager-backend"
-  tag: 7c792b913f1bbca1ab7ecdcb708285cf737e8a2a
+  tag: f0bcb3ae9165d0ff5e5ec21dfa18338976db207f
   imagePullPolicy: Always
 workload:
   resources:
