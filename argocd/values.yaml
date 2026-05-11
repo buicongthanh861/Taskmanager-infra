@@ -1,0 +1,14 @@
+# argocd/values.yaml
+global:
+  domain: localhost.argocd    
+
+configs:
+  params:
+    server.insecure: true     
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - localhost.argocd
