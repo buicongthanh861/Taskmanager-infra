@@ -13,7 +13,7 @@ microservice:
 container:
   name: "taskmanager-backend"
   image: "congthanh19/taskmanager-backend"
-  tag: 1994744ebc283f80f74e5b2e6bf262661eded375
+  tag: congthanh19/taskmanager-backend:7c792b913f1bbca1ab7ecdcb708285cf737e8a2a
   imagePullPolicy: Always
 workload:
   resources:
@@ -45,5 +45,3 @@ service:
   type: ClusterIP
   port: 5001
   targetPort: 5001
-
-
