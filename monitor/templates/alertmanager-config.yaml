@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+
+metadata:
+  name: gmail-config
+  namespace: {{ .Values.monitor.namespace }}
+
+  labels:
+    release: prometheus-stack
+
+spec:
+  route:
+    receiver: gmail-notifications
+    groupBy: ['alertname']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1h
+
+  receivers:
+    - name: gmail-notifications
+
+      emailConfigs:
+        - to: 'buicongthanh8888@gmail.com'
+          from: 'buicongthanh8888@gmail.com'
+
+          smarthost: 'smtp.gmail.com:587'
+
+          authUsername: 'buicongthanh8888@gmail.com'
+          authIdentity: 'buicongthanh8888@gmail.com'
+
+          authPassword:
+            name: gmail-auth-secret
+            key: password
+
+          requireTLS: true
+          sendResolved: true

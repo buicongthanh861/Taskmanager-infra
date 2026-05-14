@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.alerts.frontend.name}}-{{ .Values.monitor.name }}
+  namespace: {{ .Values.monitor.namespace }}
+  labels:
+    release: prometheus        
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.alerts.frontend.namespace }}
+  endpoints:
+  - port: "80"
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - {{ .Values.alerts.frontend.namespace }}

@@ -1,0 +1,11 @@
+apiVersion: v2
+name: fullstack-monitor
+description: A helm chart for monitoring a full-stack web application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: kube-prometheus-stack
+    version: "61.3.1"
+    repository: "https://prometheus-community.github.io/helm-charts"

@@ -1,0 +1,294 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: {{ .Values.monitor.name }}-alerts
+  namespace: {{ .Values.monitor.namespace }}
+
+  labels:
+    release: prometheus
+    app.kubernetes.io/name: monitor
+    app.kubernetes.io/managed-by: Helm
+
+spec:
+  groups:
+
+    # ================= BACKEND ALERTS =================
+    - name: backend-alerts
+      interval: 30s
+
+      rules:
+
+        - alert: BackendPodDead
+          expr: |
+            kube_pod_status_phase{
+              namespace="{{ .Values.alerts.backend.namespace }}",
+              pod=~"{{ .Values.alerts.backend.podRegex }}",
+              phase=~"Failed|Unknown"
+            } == 1
+
+          for: 1m
+
+          labels:
+            severity: critical
+            service: backend
+
+          annotations:
+            summary: 'BACKEND: Pod {{ "{{ $labels.pod }}" }} đã chết'
+            description: 'Pod {{ "{{ $labels.pod }}" }} trong namespace {{ .Values.alerts.backend.namespace }} ở trạng thái {{ "{{ $labels.phase }}" }}'
+
+
+        - alert: BackendCPUHigh
+          expr: |
+            (
+              sum by (pod) (
+                rate(
+                  container_cpu_usage_seconds_total{
+                    namespace="{{ .Values.alerts.backend.namespace }}",
+                    pod=~"{{ .Values.alerts.backend.podRegex }}"
+                  }[5m]
+                )
+              )
+              /
+              sum by (pod) (
+                kube_pod_container_resource_requests{
+                  namespace="{{ .Values.alerts.backend.namespace }}",
+                  pod=~"{{ .Values.alerts.backend.podRegex }}",
+                  resource="cpu"
+                }
+              )
+            ) > {{ .Values.alerts.backend.cpuThreshold }}
+
+          for: 5m
+
+          labels:
+            severity: warning
+            service: backend
+
+          annotations:
+            summary: 'BACKEND: Pod {{ "{{ $labels.pod }}" }} CPU >80%'
+            description: 'Pod {{ "{{ $labels.pod }}" }} đang dùng CPU vượt ngưỡng'
+
+
+        - alert: BackendMemoryHigh
+          expr: |
+            (
+              sum by (pod) (
+                container_memory_working_set_bytes{
+                  namespace="{{ .Values.alerts.backend.namespace }}",
+                  pod=~"{{ .Values.alerts.backend.podRegex }}"
+                }
+              )
+              /
+              sum by (pod) (
+                kube_pod_container_resource_limits{
+                  namespace="{{ .Values.alerts.backend.namespace }}",
+                  pod=~"{{ .Values.alerts.backend.podRegex }}",
+                  resource="memory"
+                }
+              )
+            ) > {{ .Values.alerts.backend.memoryThreshold }}
+
+          for: 5m
+
+          labels:
+            severity: critical
+            service: backend
+
+          annotations:
+            summary: 'BACKEND: Pod {{ "{{ $labels.pod }}" }} RAM >90%'
+            description: 'Nguy cơ OOM kill do memory vượt ngưỡng'
+
+
+        - alert: BackendRestartHigh
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="{{ .Values.alerts.backend.namespace }}",
+                pod=~"{{ .Values.alerts.backend.podRegex }}"
+              }[15m]
+            ) > {{ .Values.alerts.backend.restartThreshold }}
+
+          for: 1m
+
+          labels:
+            severity: warning
+            service: backend
+
+          annotations:
+            summary: 'BACKEND: Pod {{ "{{ $labels.pod }}" }} restart nhiều'
+            description: 'Pod restart {{ "{{ $value }}" }} lần trong 15 phút'
+
+
+    # ================= FRONTEND ALERTS =================
+    - name: frontend-alerts
+      interval: 30s
+
+      rules:
+
+        - alert: FrontendPodDead
+          expr: |
+            kube_pod_status_phase{
+              namespace="{{ .Values.alerts.frontend.namespace }}",
+              pod=~"{{ .Values.alerts.frontend.podRegex }}",
+              phase=~"Failed|Unknown"
+            } == 1
+
+          for: 1m
+
+          labels:
+            severity: critical
+            service: frontend
+
+          annotations:
+            summary: 'FRONTEND: Pod {{ "{{ $labels.pod }}" }} đã chết'
+            description: 'Pod {{ "{{ $labels.pod }}" }} trong namespace {{ .Values.alerts.frontend.namespace }} ở trạng thái {{ "{{ $labels.phase }}" }}'
+
+
+        - alert: FrontendCPUHigh
+          expr: |
+            (
+              sum by (pod) (
+                rate(
+                  container_cpu_usage_seconds_total{
+                    namespace="{{ .Values.alerts.frontend.namespace }}",
+                    pod=~"{{ .Values.alerts.frontend.podRegex }}"
+                  }[5m]
+                )
+              )
+              /
+              sum by (pod) (
+                kube_pod_container_resource_requests{
+                  namespace="{{ .Values.alerts.frontend.namespace }}",
+                  pod=~"{{ .Values.alerts.frontend.podRegex }}",
+                  resource="cpu"
+                }
+              )
+            ) > {{ .Values.alerts.frontend.cpuThreshold }}
+
+          for: 5m
+
+          labels:
+            severity: warning
+            service: frontend
+
+          annotations:
+            summary: 'FRONTEND: Pod {{ "{{ $labels.pod }}" }} CPU >80%'
+            description: 'Frontend pod đang quá tải CPU'
+
+
+        - alert: FrontendMemoryHigh
+          expr: |
+            (
+              sum by (pod) (
+                container_memory_working_set_bytes{
+                  namespace="{{ .Values.alerts.frontend.namespace }}",
+                  pod=~"{{ .Values.alerts.frontend.podRegex }}"
+                }
+              )
+              /
+              sum by (pod) (
+                kube_pod_container_resource_limits{
+                  namespace="{{ .Values.alerts.frontend.namespace }}",
+                  pod=~"{{ .Values.alerts.frontend.podRegex }}",
+                  resource="memory"
+                }
+              )
+            ) > {{ .Values.alerts.frontend.memoryThreshold }}
+
+          for: 5m
+
+          labels:
+            severity: critical
+            service: frontend
+
+          annotations:
+            summary: 'FRONTEND: Pod {{ "{{ $labels.pod }}" }} RAM >90%'
+            description: 'Frontend pod nguy cơ OOM kill'
+
+
+    # ================= DATABASE ALERTS =================
+    - name: database-alerts
+      interval: 30s
+
+      rules:
+
+        - alert: DatabasePodDead
+          expr: |
+            kube_pod_status_phase{
+              namespace="{{ .Values.alerts.database.namespace }}",
+              pod=~"{{ .Values.alerts.database.podRegex }}",
+              phase=~"Failed|Unknown"
+            } == 1
+
+          for: 1m
+
+          labels:
+            severity: critical
+            service: database
+
+          annotations:
+            summary: 'DATABASE: Pod {{ "{{ $labels.pod }}" }} đã chết'
+            description: 'Database pod không hoạt động'
+
+
+        - alert: DatabaseCPUHigh
+          expr: |
+            (
+              sum by (pod) (
+                rate(
+                  container_cpu_usage_seconds_total{
+                    namespace="{{ .Values.alerts.database.namespace }}",
+                    pod=~"{{ .Values.alerts.database.podRegex }}"
+                  }[5m]
+                )
+              )
+              /
+              sum by (pod) (
+                kube_pod_container_resource_requests{
+                  namespace="{{ .Values.alerts.database.namespace }}",
+                  pod=~"{{ .Values.alerts.database.podRegex }}",
+                  resource="cpu"
+                }
+              )
+            ) > {{ .Values.alerts.database.cpuThreshold }}
+
+          for: 5m
+
+          labels:
+            severity: warning
+            service: database
+
+          annotations:
+            summary: 'DATABASE: Pod {{ "{{ $labels.pod }}" }} CPU >80%'
+            description: 'Database pod đang quá tải CPU'
+
+
+        - alert: DatabaseMemoryHigh
+          expr: |
+            (
+              sum by (pod) (
+                container_memory_working_set_bytes{
+                  namespace="{{ .Values.alerts.database.namespace }}",
+                  pod=~"{{ .Values.alerts.database.podRegex }}"
+                }
+              )
+              /
+              sum by (pod) (
+                kube_pod_container_resource_limits{
+                  namespace="{{ .Values.alerts.database.namespace }}",
+                  pod=~"{{ .Values.alerts.database.podRegex }}",
+                  resource="memory"
+                }
+              )
+            ) > {{ .Values.alerts.database.memoryThreshold }}
+
+          for: 5m
+
+          labels:
+            severity: critical
+            service: database
+
+          annotations:
+            summary: 'DATABASE: Pod {{ "{{ $labels.pod }}" }} RAM >90%'
+            description: 'Database pod nguy cơ OOM kill'

@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.alerts.database.name}}-{{ .Values.monitor.name }}
+  namespace: {{ .Values.monitor.namespace }}
+  labels:
+    release: prometheus       
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  endpoints:
+  - port: "9187"
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+    - {{ .Values.monitor.namespace }}

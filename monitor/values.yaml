@@ -1,0 +1,32 @@
+alerts:
+  backend:
+    name: backend
+    namespace: backend
+    podRegex: "backend.*"
+
+    cpuThreshold: 0.8
+    memoryThreshold: 0.9
+    restartThreshold: 3
+
+  frontend:
+    name: frontend
+    namespace: frontend
+    podRegex: "frontend.*"
+
+    cpuThreshold: 0.8
+    memoryThreshold: 0.9
+    restartThreshold: 3
+
+  database:
+    name: postgres
+    namespace: backend
+    podRegex: "postgres.*"
+
+    cpuThreshold: 0.8
+    memoryThreshold: 0.9
+    restartThreshold: 3
+
+
+monitor:
+  name: monitor
+  namespace: monitor
